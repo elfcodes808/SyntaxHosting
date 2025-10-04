@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SyntaxHosting — Bot Hosting Made Easy</title>
+  <style>
+    /* Reset & base */
+    * {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #ddd;
+    }
+    body {
+      background: #121212;
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    a {
+      color: #00bfa5;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    a:hover {
+      color: #26efdb;
+    }
+
+    header {
+      background: #1e1e1e;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333;
+    }
+    header h1 {
+      font-weight: 700;
+      font-size: 1.6rem;
+      color: #00bfa5;
+      letter-spacing: 2px;
+    }
+    nav {
+      display: flex;
+      align-items: center;
+    }
+    nav a {
+      margin-left: 1.5rem;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .discord-login-btn {
+      background-color: #5865F2;
+      padding: 8px 16px;
+      border-radius: 6px;
+      color: white;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    .discord-login-btn:hover {
+      background-color: #4752c4;
+    }
+
+    main {
+      flex: 1;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      text-align: center;
+    }
+
+    main h2 {
+      font-size: 2.4rem;
+      margin-bottom: 1rem;
+      color: #00bfa5;
+    }
+    main p.lead {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      color: #bbb;
+    }
+
+    /* Features section */
+    .features {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    .feature {
+      background: #1e1e1e;
+      padding: 1.5rem;
+      border-radius: 8px;
+      flex: 1 1 250px;
+      box-shadow: 0 0 10px #00bfa5aa;
+      transition: box-shadow 0.3s ease;
+    }
+    .feature:hover {
+      box-shadow: 0 0 15px #26efdbcc;
+    }
+    .feature h3 {
+      margin-bottom: 1rem;
+      color: #26efdb;
+    }
+    .feature p {
+      color: #ccc;
+      font-size: 1rem;
+    }
+
+    /* Key Redemption Form */
+    .key-redeem {
+      background: #1e1e1e;
+      padding: 2rem;
+      max-width: 400px;
+      margin: 0 auto 3rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #00bfa5aa;
+    }
+    .key-redeem h3 {
+      color: #00bfa5;
+      margin-bottom: 1rem;
+    }
+    .key-redeem input[type="text"] {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      outline: none;
+    }
+    .key-redeem button {
+      width: 100%;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 6px;
+      background-color: #00bfa5;
+      color: #121212;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .key-redeem button:hover {
+      background-color: #26efdb;
+    }
+
+    footer {
+      background: #1e1e1e;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #555;
+      border-top: 1px solid #333;
+      margin-top: auto;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .features {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>SyntaxHosting</h1>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#redeem">Redeem Key</a>
+      <a href="#contact">Contact</a>
+      <a href="https://discord.com/oauth2/authorize?client_id=1395600195705639022&response_type=code&redirect_uri=https%3A%2F%2Fsyntaxguard-backend.onrender.com%2Fauth%2Fdiscord%2Fcallback&scope=identify+email" class="discord-login-btn">Login with Discord</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="hero">
+      <h2>Reliable Bot Hosting Made Simple</h2>
+      <p class="lead">Host your Discord and Roblox bots with ease. Fast, secure, and always online.</p>
+    </section>
+
+    <section id="features" class="features">
+      <div class="feature">
+        <h3>Easy Deployments</h3>
+        <p>Upload your bots and scripts with zero hassle. Start your projects instantly.</p>
+      </div>
+      <div class="feature">
+        <h3>Automatic Scaling</h3>
+        <p>Our platform scales with your needs. Run multiple bots without a sweat.</p>
+      </div>
+      <div class="feature">
+        <h3>Secure & Private</h3>
+        <p>We prioritize your privacy and security with encrypted storage and access control.</p>
+      </div>
+    </section>
+
+    <section id="redeem" class="key-redeem">
+      <h3>Redeem Your Access Key</h3>
+      <form id="redeemForm">
+        <input type="text" id="keyInput" placeholder="Enter your key here" required />
+        <button type="submit">Redeem</button>
+      </form>
+      <p id="redeemMessage" style="margin-top:1rem;color:#26efdb;"></p>
+    </section>
+  </main>
+
+  <footer id="contact">
+    <p>Contact us on <a href="https://discord.gg/VuF4hNRyBT" target="_blank" rel="noopener">Discord</a></p>
+    <p>&copy; 2025 SyntaxHosting. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const form = document.getElementById('redeemForm');
+    const keyInput = document.getElementById('keyInput');
+    const message = document.getElementById('redeemMessage');
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const key = keyInput.value.trim();
+
+      if (key.toLowerCase() === 'syntax123') {
+        message.textContent = 'Key redeemed successfully! Welcome aboard.';
+        message.style.color = '#26efdb';
+      } else {
+        message.textContent = 'Invalid key. Please try again.';
+        message.style.color = '#ef2626';
+      }
+
+      keyInput.value = '';
+    });
+  </script>
+
+</body>
+</html>
