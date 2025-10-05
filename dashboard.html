@@ -99,7 +99,6 @@
       background-color: #26efdb;
       color: #121212;
     }
-
   </style>
 </head>
 <body>
@@ -117,27 +116,46 @@
   </main>
 
   <script>
-    // Replace this with actual user data if stored
-    const username = localStorage.getItem("discordUsername");
-    if (username) {
-      document.getElementById('welcome-title').textContent = `Welcome back, ${username}!`;
+    // 1️⃣ Get session ID from URL and store it
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session');
+    if (sessionId) {
+      localStorage.setItem('sessionId', sessionId);
     }
 
-    // Logout logic
+    const storedSession = localStorage.getItem('sessionId');
+    if (!storedSession) {
+      alert('Not authenticated. Please log in.');
+      window.location.href = '/'; // redirect to homepage
+    }
+
+    // 2️⃣ Fetch user info from backend to display Discord username
+    async function fetchUser() {
+      try {
+        const res = await fetch('https://syntaxguard-backend.onrender.com/api/me', {
+          headers: { 'x-session-id': storedSession }
+        });
+        const user = await res.json();
+        if (user.username) {
+          document.getElementById('welcome-title').textContent = `Welcome back, ${user.username}!`;
+          localStorage.setItem('discordUsername', user.username);
+        }
+      } catch (err) {
+        console.error('Failed to fetch user:', err);
+      }
+    }
+    fetchUser();
+
+    // 3️⃣ Logout logic
     document.getElementById('logout').addEventListener('click', () => {
-      localStorage.clear(); // Clear token + username
+      localStorage.removeItem('sessionId');
+      localStorage.removeItem('discordUsername');
       window.location.href = '/';
     });
 
-    // Create Server logic
+    // 4️⃣ Create Server logic
     document.getElementById('createServerBtn').addEventListener('click', async (e) => {
       e.preventDefault();
-
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        alert('Not authenticated. Please log in again.');
-        return;
-      }
 
       const serverName = prompt('Enter a name for your server:');
       if (!serverName) return;
@@ -147,20 +165,17 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'x-session-id': storedSession
           },
           body: JSON.stringify({ name: serverName })
         });
 
         const data = await response.json();
-
         if (data.success) {
           alert(`✅ Server "${data.server.name}" created successfully!`);
-          // You can render it to the page or redirect
         } else {
           alert(`❌ Error: ${data.error || 'Unknown error'}`);
         }
-
       } catch (err) {
         alert('Failed to create server. See console.');
         console.error(err);
