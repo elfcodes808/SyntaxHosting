@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SyntaxHosting - Server</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #ddd; }
+    body { background: #121212; min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: #1e1e1e; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
+    header h1 { font-weight: 700; font-size: 1.6rem; color: #00bfa5; letter-spacing: 2px; }
+    nav button { background-color: transparent; border: 2px solid #00bfa5; color: #00bfa5; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+    nav button:hover { background-color: #00bfa5; color: #121212; }
+    main { flex: 1; max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+    #server-name { font-size: 2rem; margin-bottom: 1rem; color: #26efdb; }
+    .tabs { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .tabs button { padding: 0.5rem 1rem; border: 1px solid #00bfa5; border-radius: 6px; background: transparent; color: #00bfa5; cursor: pointer; transition: 0.2s; }
+    .tabs button.active, .tabs button:hover { background: #26efdb; color: #121212; }
+    .tab-content { border: 1px solid #00bfa5; border-radius: 6px; padding: 1rem; min-height: 200px; background: #1e1e1e; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>SyntaxHosting Server</h1>
+  <nav>
+    <button id="logout">Logout</button>
+  </nav>
+</header>
+
+<main>
+  <h2 id="server-name">Loading server...</h2>
+
+  <div class="tabs">
+    <button data-tab="console" class="active">Console</button>
+    <button data-tab="files">Files</button>
+    <button data-tab="settings">Settings</button>
+    <button data-tab="logs">Logs</button>
+    <button data-tab="status">Status</button>
+  </div>
+
+  <div class="tab-content" id="tab-content">
+    Loading...
+  </div>
+</main>
+
+<script>
+  const storedSession = localStorage.getItem('sessionId');
+  if (!storedSession) {
+    alert('Not authenticated. Please log in again.');
+    window.location.href = '/';
+  }
+
+  document.getElementById('logout').addEventListener('click', () => {
+    localStorage.clear();
+    window.location.href = '/';
+  });
+
+  // Get serverId from URL
+  const params = new URLSearchParams(window.location.search);
+  const serverId = params.get('serverId');
+  if (!serverId) {
+    alert('No server specified.');
+    window.location.href = 'dashboard.html';
+  }
+
+  const serverNameEl = document.getElementById('server-name');
+  const tabContent = document.getElementById('tab-content');
+  const tabButtons = document.querySelectorAll('.tabs button');
+
+  let serverData = null;
+
+  // Fetch user's servers and find this server
+  async function loadServer() {
+    try {
+      const res = await fetch('https://syntaxguard-backend.onrender.com/api/servers', {
+        headers: { 'x-session-id': storedSession }
+      });
+      const data = await res.json();
+      const servers = data.servers || [];
+      serverData = servers.find(s => s.id === serverId);
+      if (!serverData) throw new Error('Server not found');
+
+      serverNameEl.textContent = serverData.name;
+      showTab('console'); // default tab
+    } catch (err) {
+      console.error(err);
+      alert('Failed to load server. Returning to dashboard.');
+      window.location.href = 'dashboard.html';
+    }
+  }
+
+  loadServer();
+
+  // Tab switching
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      showTab(btn.dataset.tab);
+    });
+  });
+
+  function showTab(tab) {
+    switch(tab) {
+      case 'console':
+        tabContent.innerHTML = `<p>🖥️ Console for "${serverData.name}" coming soon...</p>`;
+        break;
+      case 'files':
+        tabContent.innerHTML = `<p>📂 Files for "${serverData.name}" coming soon...</p>`;
+        break;
+      case 'settings':
+        tabContent.innerHTML = `<p>⚙️ Settings for "${serverData.name}" coming soon...</p>`;
+        break;
+      case 'logs':
+        tabContent.innerHTML = `<p>📜 Logs for "${serverData.name}" coming soon...</p>`;
+        break;
+      case 'status':
+        tabContent.innerHTML = `<p>📊 Status for "${serverData.name}" coming soon...</p>`;
+        break;
+      default:
+        tabContent.innerHTML = `<p>Select a tab to view server info.</p>`;
+    }
+  }
+</script>
+
+</body>
+</html>
