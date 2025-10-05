@@ -5,110 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SyntaxHosting Dashboard</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #ddd;
-    }
-    body {
-      background: #121212;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    a {
-      color: #00bfa5;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-    a:hover {
-      color: #26efdb;
-    }
-    header {
-      background: #1e1e1e;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #333;
-    }
-    header h1 {
-      font-weight: 700;
-      font-size: 1.6rem;
-      color: #00bfa5;
-      letter-spacing: 2px;
-    }
-    nav {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    button#logout {
-      background-color: transparent;
-      border: 2px solid #00bfa5;
-      color: #00bfa5;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-    button#logout:hover {
-      background-color: #00bfa5;
-      color: #121212;
-    }
-    main {
-      flex: 1;
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      text-align: center;
-    }
-    main h2 {
-      font-size: 2.4rem;
-      margin-bottom: 1rem;
-      color: #00bfa5;
-    }
-    .create-server-btn {
-      display: inline-block;
-      background-color: #00bfa5;
-      color: #121212;
-      padding: 1rem 2rem;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 1.2rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      margin-top: 3rem;
-      text-decoration: none;
-    }
-    .create-server-btn:hover {
-      background-color: #26efdb;
-      color: #121212;
-    }
-    #server-list {
-      margin-top: 2rem;
-      text-align: left;
-    }
-    #server-list h3 {
-      color: #26efdb;
-      margin-bottom: 0.5rem;
-    }
-    #servers li {
-      cursor: pointer;
-      padding: 0.5rem;
-      border: 1px solid #00bfa5;
-      border-radius: 6px;
-      margin-bottom: 0.5rem;
-      transition: all 0.2s ease;
-    }
-    #servers li:hover {
-      background-color: #26efdb;
-      color: #121212;
-    }
+    * { box-sizing: border-box; margin:0; padding:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color:#ddd;}
+    body { background:#121212; display:flex; flex-direction:column; min-height:100vh;}
+    a { color:#00bfa5; text-decoration:none; transition: color 0.3s;}
+    a:hover { color:#26efdb;}
+    header { background:#1e1e1e; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333;}
+    header h1 { font-weight:700; font-size:1.6rem; color:#00bfa5; letter-spacing:2px;}
+    nav { display:flex; align-items:center; gap:1rem;}
+    button#logout { background-color:transparent; border:2px solid #00bfa5; color:#00bfa5; padding:0.5rem 1rem; border-radius:6px; font-weight:600; font-size:0.9rem; cursor:pointer; transition:background-color 0.3s,color 0.3s;}
+    button#logout:hover { background-color:#00bfa5; color:#121212;}
+    main { flex:1; max-width:900px; margin:2rem auto; padding:0 1rem; text-align:center;}
+    main h2 { font-size:2.4rem; margin-bottom:1rem; color:#00bfa5;}
+    .create-server-btn { display:inline-block; background-color:#00bfa5; color:#121212; padding:1rem 2rem; border-radius:8px; font-weight:700; font-size:1.2rem; cursor:pointer; transition: background-color 0.3s ease; margin-top:3rem; text-decoration:none;}
+    .create-server-btn:hover { background-color:#26efdb; color:#121212;}
+    #server-list { margin-top:2rem; text-align:left;}
+    #server-list h3 { color:#26efdb; margin-bottom:0.5rem;}
+    #servers li { cursor:pointer; padding:0.5rem; border:1px solid #00bfa5; border-radius:6px; margin-bottom:0.5rem; transition:all 0.2s ease;}
+    #servers li:hover { background-color:#26efdb; color:#121212;}
   </style>
 </head>
 <body>
@@ -132,28 +45,49 @@
 </main>
 
 <script>
-  // Load user info from localStorage
-  const username = localStorage.getItem("discordUsername");
-  const storedSession = localStorage.getItem("sessionId"); // unique session token from backend
+  // Grab session ID from URL if exists
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlSession = urlParams.get('session');
+  const storedSession = urlSession || localStorage.getItem('sessionId');
 
   if (!storedSession) {
     alert('Not authenticated. Please log in again.');
     window.location.href = '/';
+  } else {
+    localStorage.setItem('sessionId', storedSession);
   }
 
-  if (username) {
-    document.getElementById('welcome-title').textContent = `Welcome back, ${username}!`;
-  }
+  const serversList = document.getElementById('servers');
 
   // Logout
   document.getElementById('logout').addEventListener('click', () => {
     localStorage.clear();
-    window.location.href = '/';
+    window.location.href = '/index.html';
   });
 
-  const serversList = document.getElementById('servers');
+  let discordUsername = localStorage.getItem('discordUsername');
 
-  // Fetch user's servers
+  // Fetch user info if username not stored
+  async function fetchUser() {
+    try {
+      if (!discordUsername) {
+        const res = await fetch('https://syntaxguard-backend.onrender.com/api/me', {
+          headers: { 'x-session-id': storedSession }
+        });
+        const data = await res.json();
+        discordUsername = data.username;
+        localStorage.setItem('discordUsername', discordUsername);
+      }
+      document.getElementById('welcome-title').textContent = `Welcome back, ${discordUsername}!`;
+    } catch (err) {
+      console.error('Failed to fetch user info:', err);
+      alert('Authentication failed. Please log in again.');
+      localStorage.clear();
+      window.location.href = '/';
+    }
+  }
+
+  // Fetch servers
   async function fetchServers() {
     try {
       const res = await fetch('https://syntaxguard-backend.onrender.com/api/servers', {
@@ -177,9 +111,6 @@
       serversList.innerHTML = '<li>Failed to load servers.</li>';
     }
   }
-
-  // Call fetchServers on load
-  fetchServers();
 
   // Create server
   document.getElementById('createServerBtn').addEventListener('click', async (e) => {
@@ -213,12 +144,14 @@
   // Builder simulation
   function openBuilder(server) {
     alert(`🚧 Building server "${server.name}"... This may take 10-20 seconds.`);
-    // Replace this with an actual loading screen later
     setTimeout(() => {
       alert(`✅ Server "${server.name}" is ready! Open Console, Files, Settings, Logs, Status tabs now.`);
-      // Here you can render your builder UI with tabs
-    }, 10000); // 10s simulation
+    }, 10000);
   }
+
+  // Initialize dashboard
+  fetchUser();
+  fetchServers();
 </script>
 
 </body>
