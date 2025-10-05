@@ -22,6 +22,7 @@
     #server-list h3 { color:#26efdb; margin-bottom:0.5rem;}
     #servers li { cursor:pointer; padding:0.5rem; border:1px solid #00bfa5; border-radius:6px; margin-bottom:0.5rem; transition:all 0.2s ease;}
     #servers li:hover { background-color:#26efdb; color:#121212;}
+    #build-message { margin-top: 1rem; color: #ffb74d; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -42,24 +43,26 @@
   </section>
 
   <a href="#" class="create-server-btn" id="createServerBtn">Create Server</a>
+
+  <div id="build-message"></div>
 </main>
 
 <script>
-  // Grab session ID from URL if exists
   const urlParams = new URLSearchParams(window.location.search);
   const urlSession = urlParams.get('session');
   const storedSession = urlSession || localStorage.getItem('sessionId');
 
   if (!storedSession) {
     alert('Not authenticated. Please log in again.');
-    window.location.href = '/';
+    window.location.href = 'https://elfcodes808.github.io/SyntaxHosting/index.html';
   } else {
     localStorage.setItem('sessionId', storedSession);
   }
 
   const serversList = document.getElementById('servers');
+  const buildMessage = document.getElementById('build-message');
 
-  // Logout
+  // Logout button
   document.getElementById('logout').addEventListener('click', () => {
     localStorage.clear();
     window.location.href = 'https://elfcodes808.github.io/SyntaxHosting/index.html';
@@ -67,7 +70,6 @@
 
   let discordUsername = localStorage.getItem('discordUsername');
 
-  // Fetch user info if username not stored
   async function fetchUser() {
     try {
       if (!discordUsername) {
@@ -83,11 +85,10 @@
       console.error('Failed to fetch user info:', err);
       alert('Authentication failed. Please log in again.');
       localStorage.clear();
-      window.location.href = '/';
+      window.location.href = 'https://elfcodes808.github.io/SyntaxHosting/index.html';
     }
   }
 
-  // Fetch servers
   async function fetchServers() {
     try {
       const res = await fetch('https://syntaxguard-backend.onrender.com/api/servers', {
@@ -112,7 +113,6 @@
     }
   }
 
-  // Create server
   document.getElementById('createServerBtn').addEventListener('click', async (e) => {
     e.preventDefault();
     const serverName = prompt('Enter a name for your server:');
@@ -130,8 +130,12 @@
 
       const data = await response.json();
       if (data.success) {
-        alert(`✅ Server "${data.server.name}" created successfully!`);
+        buildMessage.textContent = `🚧 Build in progress for "${data.server.name}" — 10 to 20 seconds remaining...`;
         fetchServers();
+        setTimeout(() => {
+          // Redirect to servers.html with serverId
+          window.location.href = `servers.html?serverId=${data.server.id}`;
+        }, 15000); // 15s simulation
       } else {
         alert(`❌ Error: ${data.error || 'Unknown error'}`);
       }
@@ -141,15 +145,6 @@
     }
   });
 
-  // Builder simulation
-  function openBuilder(server) {
-    alert(`🚧 Building server "${server.name}"... This may take 10-20 seconds.`);
-    setTimeout(() => {
-      alert(`✅ Server "${server.name}" is ready! Open Console, Files, Settings, Logs, Status tabs now.`);
-    }, 10000);
-  }
-
-  // Initialize dashboard
   fetchUser();
   fetchServers();
 </script>
