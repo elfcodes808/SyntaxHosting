@@ -43,110 +43,116 @@
   </section>
 
   <a href="#" class="create-server-btn" id="createServerBtn">Create Server</a>
-
   <div id="build-message"></div>
 </main>
 
 <script>
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlSession = urlParams.get('session');
-  const storedSession = urlSession || localStorage.getItem('sessionId');
+const urlParams = new URLSearchParams(window.location.search);
+const urlSession = urlParams.get('session');
+const storedSession = urlSession || localStorage.getItem('sessionId');
 
-  if (!storedSession) {
-    alert('Not authenticated. Please log in again.');
-    window.location.href = 'https://elfcodes808.github.io/SyntaxHosting/index.html';
-  } else {
-    localStorage.setItem('sessionId', storedSession);
-  }
+if (!storedSession) {
+  alert('Not authenticated. Please log in again.');
+  window.location.href = 'https://elfcodes808.github.io/SyntaxHosting/index.html';
+} else {
+  localStorage.setItem('sessionId', storedSession);
+}
 
-  const serversList = document.getElementById('servers');
-  const buildMessage = document.getElementById('build-message');
+const serversList = document.getElementById('servers');
+const buildMessage = document.getElementById('build-message');
 
-  // Logout button
-  document.getElementById('logout').addEventListener('click', () => {
-    localStorage.clear();
-    window.location.href = 'https://elfcodes808.github.io/SyntaxHosting/index.html';
-  });
+document.getElementById('logout').addEventListener('click', () => {
+  localStorage.clear();
+  window.location.href = 'https://elfcodes808.github.io/SyntaxHosting/index.html';
+});
 
-  let discordUsername = localStorage.getItem('discordUsername');
+let discordUsername = localStorage.getItem('discordUsername');
 
-  async function fetchUser() {
-    try {
-      if (!discordUsername) {
-        const res = await fetch('https://syntaxguard-backend.onrender.com/api/me', {
-          headers: { 'x-session-id': storedSession }
-        });
-        const data = await res.json();
-        discordUsername = data.username;
-        localStorage.setItem('discordUsername', discordUsername);
-      }
-      document.getElementById('welcome-title').textContent = `Welcome back, ${discordUsername}!`;
-    } catch (err) {
-      console.error('Failed to fetch user info:', err);
-      alert('Authentication failed. Please log in again.');
-      localStorage.clear();
-      window.location.href = 'https://elfcodes808.github.io/SyntaxHosting/index.html';
-    }
-  }
-
-  async function fetchServers() {
-    try {
-      const res = await fetch('https://syntaxguard-backend.onrender.com/api/servers', {
+async function fetchUser() {
+  try {
+    if (!discordUsername) {
+      const res = await fetch('https://syntaxguard-backend.onrender.com/api/me', {
         headers: { 'x-session-id': storedSession }
       });
       const data = await res.json();
-      serversList.innerHTML = '';
-
-      if (data.servers && data.servers.length > 0) {
-        data.servers.forEach(server => {
-          const li = document.createElement('li');
-          li.textContent = server.name;
-          li.addEventListener('click', () => openBuilder(server));
-          serversList.appendChild(li);
-        });
-      } else {
-        serversList.innerHTML = '<li>No servers yet. Create one!</li>';
-      }
-    } catch (err) {
-      console.error('Failed to fetch servers:', err);
-      serversList.innerHTML = '<li>Failed to load servers.</li>';
+      discordUsername = data.username;
+      localStorage.setItem('discordUsername', discordUsername);
     }
+    document.getElementById('welcome-title').textContent = `Welcome back, ${discordUsername}!`;
+  } catch (err) {
+    console.error('Failed to fetch user info:', err);
+    alert('Authentication failed. Please log in again.');
+    localStorage.clear();
+    window.location.href = 'https://elfcodes808.github.io/SyntaxHosting/index.html';
   }
+}
 
-  document.getElementById('createServerBtn').addEventListener('click', async (e) => {
-    e.preventDefault();
-    const serverName = prompt('Enter a name for your server:');
-    if (!serverName) return;
+async function fetchServers() {
+  try {
+    const res = await fetch('https://syntaxguard-backend.onrender.com/api/servers', {
+      headers: { 'x-session-id': storedSession }
+    });
+    const data = await res.json();
+    serversList.innerHTML = '';
 
-    try {
-      const response = await fetch('https://syntaxguard-backend.onrender.com/api/create-server', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-session-id': storedSession
-        },
-        body: JSON.stringify({ name: serverName })
+    if (data.servers && data.servers.length > 0) {
+      data.servers.forEach(server => {
+        const li = document.createElement('li');
+        li.textContent = server.name;
+        li.addEventListener('click', () => {
+          window.location.href = `servers.html?serverId=${server.id}`;
+        });
+        serversList.appendChild(li);
       });
-
-      const data = await response.json();
-      if (data.success) {
-        buildMessage.textContent = `🚧 Build in progress for "${data.server.name}" — 10 to 20 seconds remaining...`;
-        fetchServers();
-        setTimeout(() => {
-          // Redirect to servers.html with serverId
-          window.location.href = `servers.html?serverId=${data.server.id}`;
-        }, 15000); // 15s simulation
-      } else {
-        alert(`❌ Error: ${data.error || 'Unknown error'}`);
-      }
-    } catch (err) {
-      alert('Failed to create server. See console.');
-      console.error(err);
+    } else {
+      serversList.innerHTML = '<li>No servers yet. Create one!</li>';
     }
-  });
+  } catch (err) {
+    console.error('Failed to fetch servers:', err);
+    serversList.innerHTML = '<li>Failed to load servers.</li>';
+  }
+}
 
-  fetchUser();
-  fetchServers();
+document.getElementById('createServerBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  const serverName = prompt('Enter a name for your server:');
+  if (!serverName) return;
+
+  try {
+    const response = await fetch('https://syntaxguard-backend.onrender.com/api/create-server', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-session-id': storedSession
+      },
+      body: JSON.stringify({ name: serverName })
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      let countdown = 15;
+      buildMessage.textContent = `🚧 Build in progress for "${data.server.name}" — ${countdown} seconds remaining...`;
+      const interval = setInterval(() => {
+        countdown--;
+        buildMessage.textContent = `🚧 Build in progress for "${data.server.name}" — ${countdown} seconds remaining...`;
+        if (countdown <= 0) {
+          clearInterval(interval);
+          window.location.href = `servers.html?serverId=${data.server.id}`;
+        }
+      }, 1000);
+
+      fetchServers();
+    } else {
+      alert(`❌ Error: ${data.error || 'Unknown error'}`);
+    }
+  } catch (err) {
+    alert('Failed to create server. See console.');
+    console.error(err);
+  }
+});
+
+fetchUser();
+fetchServers();
 </script>
 
 </body>
