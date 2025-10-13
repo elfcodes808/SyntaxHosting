@@ -102,26 +102,68 @@
   });
 
   function showTab(tab) {
-    switch(tab) {
-      case 'console':
-        tabContent.innerHTML = `<p>🖥️ Console for "${serverData.name}" coming soon...</p>`;
-        break;
-      case 'files':
-        tabContent.innerHTML = `<p>📂 Files for "${serverData.name}" coming soon...</p>`;
-        break;
-      case 'settings':
-        tabContent.innerHTML = `<p>⚙️ Settings for "${serverData.name}" coming soon...</p>`;
-        break;
-      case 'logs':
-        tabContent.innerHTML = `<p>📜 Logs for "${serverData.name}" coming soon...</p>`;
-        break;
-      case 'status':
-        tabContent.innerHTML = `<p>📊 Status for "${serverData.name}" coming soon...</p>`;
-        break;
-      default:
-        tabContent.innerHTML = `<p>Select a tab to view server info.</p>`;
-    }
+  switch(tab) {
+    case 'console':
+      tabContent.innerHTML = `
+        <p>🖥️ Console for "${serverData.name}"</p>
+        <textarea id="console-log" style="width:100%;height:150px;background:#121212;color:#26efdb;padding:0.5rem;border:1px solid #00bfa5;border-radius:6px;" readonly>Server console output will appear here...</textarea>
+        <input type="text" id="console-input" placeholder="Type command..." style="width:100%;margin-top:0.5rem;padding:0.5rem;border-radius:6px;border:1px solid #00bfa5;background:#1e1e1e;color:#ddd;">
+        <button id="send-command" style="margin-top:0.5rem;padding:0.5rem 1rem;background:#00bfa5;color:#121212;border:none;border-radius:6px;cursor:pointer;">Send</button>
+      `;
+
+      document.getElementById('send-command').addEventListener('click', () => {
+        const input = document.getElementById('console-input');
+        const log = document.getElementById('console-log');
+        log.value += `\n> ${input.value}`; // for now just echo
+        input.value = '';
+        log.scrollTop = log.scrollHeight;
+      });
+      break;
+
+    case 'files':
+      tabContent.innerHTML = `
+        <p>📂 Files for "${serverData.name}"</p>
+        <p>You can upload and manage files here once hosting is live.</p>
+      `;
+      break;
+
+    case 'settings':
+      tabContent.innerHTML = `
+        <p>⚙️ Settings for "${serverData.name}"</p>
+        <ul>
+          <li>Server ID: ${serverData.id}</li>
+          <li>Owner ID: ${serverData.ownerId}</li>
+          <li>Created At: ${new Date(serverData.createdAt).toLocaleString()}</li>
+        </ul>
+      `;
+      break;
+
+    case 'logs':
+      tabContent.innerHTML = `
+        <p>📜 Logs for "${serverData.name}"</p>
+        <textarea style="width:100%;height:150px;background:#121212;color:#26efdb;padding:0.5rem;border:1px solid #00bfa5;border-radius:6px;" readonly>
+No logs yet. Logs will appear here when hosting is live...
+        </textarea>
+      `;
+      break;
+
+    case 'status':
+      tabContent.innerHTML = `
+        <p>📊 Status for "${serverData.name}"</p>
+        <ul>
+          <li>Status: Offline</li>
+          <li>Memory Usage: 0 MB</li>
+          <li>CPU Usage: 0%</li>
+          <li>Uptime: 0s</li>
+        </ul>
+      `;
+      break;
+
+    default:
+      tabContent.innerHTML = `<p>Select a tab to view server info.</p>`;
   }
+}
+
 </script>
 
 </body>
