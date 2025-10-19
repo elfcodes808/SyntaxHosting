@@ -8,89 +8,61 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; color: #ddd; }
     body { background: #121212; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 2rem; }
     h1 { color: #00bfa5; margin-bottom: 1rem; font-size: 2rem; }
-    #login-box, #portal-box { background: #1e1e1e; padding: 2rem; border-radius: 8px; border: 1px solid #00bfa5; width: 100%; max-width: 600px; text-align: center; }
-    input { background: #121212; border: 1px solid #00bfa5; color: #ddd; padding: 0.5rem; border-radius: 6px; width: 80%; margin-bottom: 1rem; }
+    #portal-box { background: #1e1e1e; padding: 2rem; border-radius: 8px; border: 1px solid #00bfa5; width: 100%; max-width: 600px; text-align: center; display: none;}
     button { background: #00bfa5; border: none; color: #121212; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; transition: 0.3s; }
     button:hover { background: #26efdb; }
-    #user-stats { margin-top: 1.5rem; text-align: left; background: #181818; border-radius: 6px; padding: 1rem; border: 1px solid #00bfa5; }
-    #user-stats p { margin-bottom: 0.5rem; }
-    #user-list { margin-top: 1rem; }
-    #user-list li { background: #1e1e1e; padding: 0.6rem; border-bottom: 1px solid #333; border-radius: 4px; }
   </style>
 </head>
 <body>
 
   <h1>SyntaxHosting Staff Portal</h1>
 
-  <div id="login-box">
-    <p>Enter your staff key to access the portal:</p>
-    <input type="password" id="staff-key" placeholder="Enter staff key..." />
-    <button id="login-btn">Login</button>
-    <p id="login-status" style="margin-top: 0.5rem; color: #f55;"></p>
-  </div>
-
-  <div id="portal-box" style="display:none;">
+  <div id="portal-box">
     <h2>Staff Dashboard</h2>
-    <div id="user-stats">
-      <p><strong>Total Registered Users:</strong> <span id="user-count">Loading...</span></p>
-    </div>
-    <ul id="user-list"></ul>
+    <p id="welcome-message">Loading...</p>
   </div>
 
   <script>
     const apiBase = 'https://syntaxguard-backend.onrender.com';
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session') || localStorage.getItem('sessionId');
 
-    document.getElementById('login-btn').addEventListener('click', async () => {
-      const key = document.getElementById('staff-key').value.trim();
-      const statusEl = document.getElementById('login-status');
-      if (!key) return statusEl.textContent = 'Please enter a key.';
+    if (!sessionId) {
+      alert('Not authenticated. Please log in.');
+      window.location.href = 'https://elfcodes808.github.io/SyntaxHosting/index.html';
+    } else {
+      localStorage.setItem('sessionId', sessionId);
+    }
 
+    async function checkStaffAccess() {
       try {
         const res = await fetch(`${apiBase}/api/staff/verify`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key })
+          headers: {
+            'Content-Type': 'application/json',
+            'x-session-id': sessionId
+          }
         });
         const data = await res.json();
+
+        const portalBox = document.getElementById('portal-box');
+        const welcomeMsg = document.getElementById('welcome-message');
 
         if (data.success) {
-          localStorage.setItem('staffSession', data.sessionId);
-          document.getElementById('login-box').style.display = 'none';
-          document.getElementById('portal-box').style.display = 'block';
-          loadUsers();
+          portalBox.style.display = 'block';
+          welcomeMsg.textContent = `Welcome, ${data.username}! You have staff access.`;
         } else {
-          statusEl.textContent = data.message || 'Invalid key.';
+          alert('You are not authorized for staff access.');
+          window.location.href = 'https://elfcodes808.github.io/SyntaxHosting/index.html';
         }
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = 'Error connecting to backend.';
-      }
-    });
-
-    async function loadUsers() {
-      const session = localStorage.getItem('staffSession');
-      if (!session) return;
-
-      try {
-        const res = await fetch(`${apiBase}/api/staff/users`, {
-          headers: { 'x-staff-session': session }
-        });
-        const data = await res.json();
-
-        document.getElementById('user-count').textContent = data.total || 0;
-
-        const listEl = document.getElementById('user-list');
-        listEl.innerHTML = '';
-        data.users.forEach((u, i) => {
-          const li = document.createElement('li');
-          li.textContent = `#${i + 1} • ${u.username} (${u.email || 'No email'})`;
-          listEl.appendChild(li);
-        });
 
       } catch (err) {
         console.error(err);
+        alert('Error connecting to backend.');
       }
     }
+
+    checkStaffAccess();
   </script>
 
 </body>
